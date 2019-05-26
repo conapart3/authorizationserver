@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableAuthorizationServer
-public class AuthServerOAuth2Config extends AuthorizationServerConfigurerAdapter
+public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter
 {
     @Autowired
     @Qualifier(value = "authenticationManagerBean")
