@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
+//When the client application needs to acquire an Access Token, it will do so after a simple form-login driven auth process:
 @Configuration
 public class ServerSecurityConfig extends WebSecurityConfigurerAdapter
 {
@@ -21,12 +22,12 @@ public class ServerSecurityConfig extends WebSecurityConfigurerAdapter
 
     @Override
     @Bean
-    public AuthenticationManager authenticationManagerBean()
-            throws Exception
+    public AuthenticationManager authenticationManagerBean() throws Exception
     {
         return super.authenticationManagerBean();
     }
 
+    // note - the form login configuration isn't actually necessary for the password flow, only for the implicit flow
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {

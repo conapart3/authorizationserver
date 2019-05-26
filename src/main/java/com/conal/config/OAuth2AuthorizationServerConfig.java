@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 @EnableAuthorizationServer
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter
 {
+    // In order to use the “password” grant type we need to wire in and use the AuthenticationManager bean
     @Autowired
     @Qualifier(value = "authenticationManagerBean")
     private AuthenticationManager authenticationManager;
@@ -37,9 +38,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private Resource schemaScript;
 
     @Override
-    public void configure(
-            AuthorizationServerSecurityConfigurer oauthServer)
-            throws Exception
+    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception
     {
         oauthServer
                 .tokenKeyAccess("permitAll()")
@@ -47,15 +46,16 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     }
 
     @Override
-    public void configure(ClientDetailsServiceConfigurer clients)
-            throws Exception
+    public void configure(ClientDetailsServiceConfigurer clients) throws Exception
     {
         clients.jdbc(dataSource())
+                // We registered a client for the “implicit” grant type
                 .withClient("sampleClientId")
                 .authorizedGrantTypes("implicit")
                 .scopes("read")
                 .autoApprove(true)
                 .and()
+                // We registered another client and authorized the “password“, “authorization_code” and “refresh_token” grant types
                 .withClient("clientIdPassword")
                 .secret("secret")
                 .authorizedGrantTypes(
@@ -66,7 +66,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception
     {
-        endpoints.tokenStore(tokenStore()).authenticationManager(authenticationManager);
+        endpoints
+                .tokenStore(tokenStore())
+                .authenticationManager(authenticationManager);
     }
 
     @Bean
@@ -78,6 +80,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         return initializer;
     }
 
+    // it is notable that we don't actually need this databasePopulator bean because Spring Boot will actually make use of the schema.sql by default
     private DatabasePopulator databasePopulator()
     {
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
@@ -85,6 +88,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
         return populator;
     }
 
+    // In order to persist the tokens, we used a JdbcTokenStore
     @Bean
     public DataSource dataSource()
     {
