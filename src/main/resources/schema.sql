@@ -1,5 +1,7 @@
 #Note that, as we are using JdbcTokenStore we need to initialize database schema, so we used DataSourceInitializer – and the following SQL schema:
 
+use oauth;
+
 drop table if exists oauth_client_details;
 create table oauth_client_details (
   client_id VARCHAR(255) PRIMARY KEY,

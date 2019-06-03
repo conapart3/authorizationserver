@@ -1,5 +1,6 @@
 package com.conal.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableAuthorizationServer
+@Slf4j
 public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter
 {
     // In order to use the “password” grant type we need to wire in and use the AuthenticationManager bean
@@ -38,8 +40,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     private Resource schemaScript;
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception
+    public void configure(AuthorizationServerSecurityConfigurer oauthServer)
     {
+        log.info("Configuring AuthorizationServerSecurityConfigurer with tokenKeyAccess: permitAll() and checkTokenAccess: isAuthenticated().");
         oauthServer
                 .tokenKeyAccess("permitAll()")
                 .checkTokenAccess("isAuthenticated()");
@@ -48,6 +51,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception
     {
+        log.info("Configuring ClientDetailsServiceConfigurer with jdbc dataSource.");
         clients.jdbc(dataSource())
                 // We registered a client for the “implicit” grant type
                 .withClient("sampleClientId")
@@ -64,8 +68,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints)
     {
+        log.info("Configuring AuthorizationServerEndpointsConfigurer with tokenStore() and authenticationManager.");
         endpoints
                 .tokenStore(tokenStore())
                 .authenticationManager(authenticationManager);
@@ -74,6 +79,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     public DataSourceInitializer dataSourceInitializer(DataSource dataSource)
     {
+        log.info("Creating DataSourceInitializer bean.");
         DataSourceInitializer initializer = new DataSourceInitializer();
         initializer.setDataSource(dataSource);
         initializer.setDatabasePopulator(databasePopulator());
@@ -83,6 +89,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     // it is notable that we don't actually need this databasePopulator bean because Spring Boot will actually make use of the schema.sql by default
     private DatabasePopulator databasePopulator()
     {
+        log.info("Populating database with schemaScript.");
         ResourceDatabasePopulator populator = new ResourceDatabasePopulator();
         populator.addScript(schemaScript);
         return populator;
@@ -92,6 +99,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     public DataSource dataSource()
     {
+        log.info("Creating dataSource bean.");
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
         dataSource.setUrl(env.getProperty("jdbc.url"));
@@ -104,6 +112,7 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Bean
     public TokenStore tokenStore()
     {
+        log.info("Creating TokenStore bean.");
         return new JdbcTokenStore(dataSource());
     }
 }

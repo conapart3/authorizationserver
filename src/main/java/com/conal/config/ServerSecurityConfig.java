@@ -1,5 +1,6 @@
 package com.conal.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,11 +10,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 //When the client application needs to acquire an Access Token, it will do so after a simple form-login driven auth process:
 @Configuration
+@Slf4j
 public class ServerSecurityConfig extends WebSecurityConfigurerAdapter
 {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception
     {
+        log.info("Configuring AuthenticationManagerBuilder with user john, password 123, roles USER.");
         auth.inMemoryAuthentication()
                 .withUser("john")
                 .password("123")
@@ -24,6 +27,7 @@ public class ServerSecurityConfig extends WebSecurityConfigurerAdapter
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception
     {
+        log.info("Configuring AuthenticationManagerBean.");
         return super.authenticationManagerBean();
     }
 
@@ -31,8 +35,9 @@ public class ServerSecurityConfig extends WebSecurityConfigurerAdapter
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {
-        http.authorizeRequests()
-                .antMatchers("/login").permitAll()
+        log.info("Configuring HttpSecurity.");
+        http.csrf().disable()
+                .authorizeRequests().antMatchers("/login", "/oauth/token").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().permitAll();
